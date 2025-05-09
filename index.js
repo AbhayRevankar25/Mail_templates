@@ -98,102 +98,71 @@ async function generateOutline(subject, content, extractedTitle) {
   }
 }
 
-// Function to process the content of the document
-function processContent(content) {
-  if (!content) return "";
-
-  // Extract subheaders marked with **Subheader** followed by content
-  const regex = /\*\*(.+?)\*\*\s*([\s\S]*?)(?=\*\*|$)/g;
-  let html = "";
-  let match;
-
-  // If there are subheaders, format them
-  while ((match = regex.exec(content)) !== null) {
-    const subheader = match[1].trim();
-    const text = match[2].trim().replace(/\n+/g, "<br>");
-    html += `<h4>${subheader}</h4><p>${text}</p>`;
-  }
-
-  // If no matches, just return as paragraph
-  if (!html) {
-    return `<p>${content.replace(/\n+/g, "<br>")}</p>`;
-  }
-
-  return html;
-}
-
-// Function to generate HTML output from the structured JSON data
+// Function to generate HTML from the JSON response
 function generateHtmlOutput(sections) {
   let html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${sections[0]?.title || "Document"}</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f4f6f8;
-      color: #333;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      background: #fff;
-      max-width: 800px;
-      margin: auto;
-      padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-    }
-    h2 {
-      font-size: 28px;
-      color: #1a73e8;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    h3 {
-      font-size: 22px;
-      color: #0d47a1;
-      margin-top: 30px;
-      border-left: 5px solid #1a73e8;
-      padding-left: 10px;
-    }
-    h4 {
-      font-size: 18px;
-      color: #3367d6;
-      margin-top: 20px;
-    }
-    p {
-      line-height: 1.6;
-      margin: 10px 0;
-    }
-    .section-content {
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #ddd;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2>${sections[0]?.title || "Untitled Document"}</h2>`;
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${sections[0].content || "Document"}</title>
+    <style>
+      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+      .container { background: #ffffff; max-width: 700px; margin: auto; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); }
+      h2 { font-size: 28px; color: #1a73e8; text-align: center; margin-bottom: 30px; }
+      h3 { font-size: 20px; color: #0d47a1; margin-top: 25px; margin-bottom: 10px; border-left: 4px solid #1a73e8; padding-left: 10px; }
+      .section-content { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #e0e0e0; }
+      p { margin-bottom: 1em; line-height: 1.6; }
+      ul, ol { padding-left: 20px; margin-top: 0.5em; }
+      li { margin-bottom: 0.5em; }
+      @media (max-width: 768px) { .container { padding: 20px; } }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>${sections[0].content || "Email Title"}</h2>`;
 
-  // Loop through each section
-  sections.forEach(section => {
-    html += `
-    <div class="section-content">
+  sections.slice(1).forEach(section => {
+    html += `<div class="section-content">
       <h3>${section.title}</h3>
-      ${processContent(section.content)}
+      <div>${processContent(section.content)}</div>
     </div>`;
   });
 
-  html += `
-  </div>
-</body>
-</html>`;
+  html += `</div></body></html>`;
   return html;
 }
+
+// Function to process the content into HTML format
+function processContent(content) {
+  if (typeof content === 'string') return parseText(content);
+  if (Array.isArray(content)) return `<ul>${content.map(item => `<li>${processContent(item)}</li>`).join('')}</ul>`;
+  if (typeof content === 'object') {
+    return `<ul>${Object.entries(content).map(([k, v]) => `<li><strong>${k}:</strong> ${processContent(v)}</li>`).join('')}</ul>`;
+  }
+  return '';
+}
+
+// Function to parse the text into HTML
+function parseText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  let html = '', listOpen = false, ordered = false;
+  lines.forEach(line => {
+    if (/^[-*]\s/.test(line)) {
+      if (!listOpen) html += '<ul>', listOpen = true, ordered = false;
+      html += `<li>${line.replace(/^[-*]\s/, '')}</li>`;
+    } else if (/^\d+\.\s/.test(line)) {
+      if (!listOpen) html += '<ol>', listOpen = true, ordered = true;
+      html += `<li>${line.replace(/^\d+\.\s/, '')}</li>`;
+    } else {
+      if (listOpen) html += ordered ? '</ol>' : '</ul>', listOpen = false;
+      html += `<p>${line}</p>`;
+    }
+  });
+  if (listOpen) html += ordered ? '</ol>' : '</ul>';
+  return html;
+}
+
 
 // Main function to process the document
 async function main() {
