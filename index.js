@@ -17,6 +17,7 @@ const prompt = PromptTemplate.fromTemplate(`
 You are an expert email marketer tasked with extracting the most important key points and sections from a long document's title and content (such as a product description, a meeting agenda, or a newsletter draft) and returning them in a structured JSON array suitable for summarizing in an email.
 
 Your output must be a valid JSON array (without markdown code blocks).
+let the output dont hallucinate.
 
 Each object must contain:
 1. "title": concise string for section heading
