@@ -1,92 +1,175 @@
-Email Template Generator
-This project is a Node.js application that processes a long document (such as a product description, meeting agenda, or newsletter draft) and generates a structured email outline in both JSON and HTML formats. The output is suitable for summarizing content in an email with sections such as subject line, key points, meeting details, and preparation instructions.
+# Smart Email Template Generator using Gemini & LangChain
 
-Features
-Document Parsing: Supports parsing PDF, Markdown, and plain text files.
+This Node.js application extracts structured email outlines from unstructured documents (PDF, Markdown, or plain text) using Google Gemini Pro (`gemini-2.0-flash`) and LangChain's prompt orchestration. The tool outputs both a JSON structure for the email sections and a styled HTML email template.
 
-Email Outline Generation: Converts document content into a structured JSON array for email summarization.
+---
 
-HTML Output: Generates a styled HTML version of the email outline.
+## 🚀 Features
 
-API Integration: Uses Google Generative AI (Gemini 2.0 Flash) for content analysis and summarization.
+- 📄 Parses PDF, Markdown, and TXT files
+- 🧠 Uses Google Gemini via LangChain to extract structured summaries
+- 📬 Outputs:
+  - A clean **JSON** email outline
+  - A beautiful **HTML** email template
+- 🎯 Tailored for use cases like:
+  - Meeting invites
+  - Newsletters
+  - Product announcements
 
-Prerequisites
-Before running the project, ensure you have the following:
+---
 
-Node.js (version 16 or higher)
+## 🛠️ Setup Instructions
 
-npm (Node Package Manager)
+### 1. Clone the repository
 
-Additionally, you will need a Google API key for the Google Generative AI API. Store this key in an .env file.
-
-Setup
-Clone this repository to your local machine:
-
-bash
-Copy
-Edit
-git clone https://github.com/yourusername/email-template-generator.git
+```bash
+git clone https://github.com/your-username/email-template-generator.git
 cd email-template-generator
-Install the required dependencies:
+```
 
-bash
-Copy
-Edit
+### 2. Install dependencies
+
+```bash
 npm install
-Create a .env file in the root directory with your Google API key:
+```
 
-bash
-Copy
-Edit
-GOOGLE_API_KEY=your_google_api_key_here
-Install the necessary external packages for document parsing:
+### 3. Set your Google Generative AI API key
 
-bash
-Copy
-Edit
-npm install pdf-parse marked
-Usage
-Place the document file you want to process (either a PDF, Markdown, or plain text file) in the project directory.
+Create a `.env` file in the root directory and add:
 
-Run the script with the following command, specifying the file you want to process (e.g., sampleInput.pdf):
+```env
+GOOGLE_API_KEY=your_google_genai_api_key_here
+```
 
-bash
-Copy
-Edit
-node index.js sampleInput.pdf
-The script will generate two output files:
+> 🔑 Get your API key from [https://makersuite.google.com/app/apikey](https://makersuite.google.com/app/apikey)
 
-output.json: A structured JSON file containing the email outline.
+---
 
-output.html: An HTML file containing a styled email template.
+## 📂 Usage
 
-If no file is specified, the script will default to using sampleInput.txt.
+### Run the script with a document file path:
 
-Structure of Generated JSON
-The output JSON will contain an array of objects, where each object represents a section of the email. Each section includes:
+```bash
+node index.js path/to/your/document.pdf
+```
 
-title: The title or heading of the section (e.g., "Subject", "Meeting Details").
+If no path is provided, it defaults to `sampleInput.txt`.
 
-content: The detailed content for that section (e.g., text, bullet points).
+### Supported formats:
 
-Example:
+- `.pdf`
+- `.md`
+- `.txt`
 
-json
-Copy
-Edit
+### Output:
+
+- ✅ `output.json` – structured email outline
+- ✅ `output.html` – styled HTML email template
+
+---
+
+## 📦 Example Output
+
+### JSON (output.json)
+
+```json
 [
   {
     "title": "Subject",
-    "content": "Meeting Agenda for the Product Launch"
+    "content": "Weekly Team Sync"
   },
   {
     "title": "Introduction",
-    "content": "Dear Team, Please find below the agenda for the upcoming product launch meeting."
+    "content": "This email summarizes the upcoming weekly sync meeting."
   },
   {
-    "title": "Agenda Item 1",
-    "content": "Introduction of the new product and its features."
+    "title": "Agenda",
+    "content": "- Updates from each department\n- Q&A session\n- Planning next week"
+  },
+  {
+    "title": "RSVP",
+    "content": "Please confirm your attendance by EOD."
   }
 ]
-Structure of Generated HTML
-The HTML output will be a well-structured email template containing the same sections as the JSON output. The content is styled with a clean, responsive design suitable for email communication.
+```
+
+### HTML (output.html)
+
+A polished, mobile-friendly HTML email with:
+- Proper headers and section formatting
+- Modern fonts and layout
+- Styled call-to-action (CTA)
+
+---
+
+## 🧠 How It Works
+
+1. **Input Parsing**:
+   - Detects file type (`.pdf`, `.md`, `.txt`)
+   - Extracts text accordingly using:
+     - `pdf-parse` for PDFs
+     - `marked` for Markdown
+     - `fs.readFileSync` for text
+
+2. **Prompt Construction**:
+   - Uses LangChain's `PromptTemplate` to format a task prompt for Gemini
+   - Sends it to Gemini Pro via `ChatGoogleGenerativeAI` LLM wrapper
+
+3. **Output Generation**:
+   - Gemini returns a structured email breakdown
+   - Parsed into:
+     - `output.json` for logical structure
+     - `output.html` for visual presentation
+
+---
+
+## 🔧 File Structure
+
+```
+.
+├── index.js             # Main entry point
+├── output.json          # Final structured output (auto-generated)
+├── output.html          # HTML email output (auto-generated)
+├── sampleInput.txt      # Sample input file
+├── .env                 # API key (not committed)
+├── .gitignore           # Node modules, env, outputs
+└── README.md            # This file
+```
+
+---
+
+## ✨ Tech Stack
+
+- 💬 [LangChain JS](https://js.langchain.com/)
+- 🤖 [Google Generative AI (Gemini)](https://ai.google.dev/)
+- 📦 `pdf-parse`, `marked`, `dotenv`, `fs`
+- 🖥️ Node.js
+- 🎨 HTML/CSS (for email formatting)
+
+---
+
+## 🧪 Sample Run
+
+```bash
+node index.js sampleInput.txt
+```
+
+This will generate:
+- `output.json`: structured outline
+- `output.html`: styled email preview
+
+---
+
+## 📜 License
+
+MIT License — use, share, and modify freely.
+
+---
+
+## 👨‍💻 Author
+
+Built by Abhay Revankar
+
+---
+
+> Note: This tool uses Google Gemini via API and may incur usage limits or costs.
